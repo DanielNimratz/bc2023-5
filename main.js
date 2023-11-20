@@ -52,7 +52,7 @@ app.get("/notes", async (req, res) => {
 
 // Запит GET для отримання HTML форми для завантаження нотаток
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "static", "UploadForm.html"));
+    res.sendFile( __dirname + "/UploadForm.html");
 });
 
 // Запит POST для завантаження нотаток
