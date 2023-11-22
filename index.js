@@ -11,7 +11,6 @@ app.use(bodyParser.json());
 
 const notesFilePath = "notes.json";
 
-// Зчитування JSON файлу з нотатками
 const getNotes = (cb) => {
     if (fs.existsSync(notesFilePath)) {
         fs.readFile(notesFilePath, "utf-8", (err, data) => {
@@ -22,12 +21,10 @@ const getNotes = (cb) => {
             cb(null, JSON.parse(data));
         });
     } else {
-        // Якщо файл не існує, повертати порожній масив нотаток
         cb(null, []);
     }
 };
 
-// Збереження нотаток в JSON файл
 const saveNotes = (notes, cb) => {
     fs.writeFile(notesFilePath, JSON.stringify(notes, null, 2), "utf-8", (err) => {
         if (err) {
@@ -38,7 +35,6 @@ const saveNotes = (notes, cb) => {
     });
 };
 
-// Запит GET для отримання всіх нотаток
 app.get("/notes", async (req, res) => {
     getNotes((err, notes) => {
         if (err) {
@@ -50,12 +46,12 @@ app.get("/notes", async (req, res) => {
     });
 });
 
-// Запит GET для отримання HTML форми для завантаження нотаток
-app.get("/", (req, res) => {
-    res.sendFile( __dirname + "/UploadForm.html");
+
+app.get('/UploadForm.html', (req, res) => {
+    res.sendFile(__dirname + '/static/UploadForm.html');
 });
 
-// Запит POST для завантаження нотаток
+
 app.post("/upload", upload.none(), async (req, res) => {
     const { note_name, note } = req.body;
 
@@ -70,13 +66,11 @@ app.post("/upload", upload.none(), async (req, res) => {
             return;
         }
 
-        // Перевірка, чи нотатка з таким ім'ям вже існує
         const existingNote = notes.find((n) => n.note_name === note_name);
         if (existingNote) {
             return res.status(400).send("Неправильний запит: Замітка з такою назвою вже існує.");
         }
 
-        // Додавання нової нотатки
         notes.push({ note_name, note });
         saveNotes(notes, (saveError) => {
             if (saveError) {
@@ -89,7 +83,6 @@ app.post("/upload", upload.none(), async (req, res) => {
     });
 });
 
-// Запит GET для отримання конкретної нотатки за ім'ям
 app.get("/notes/:note_name", async (req, res) => {
     getNotes((error, notes) => {
         if (error) {
@@ -109,7 +102,6 @@ app.get("/notes/:note_name", async (req, res) => {
     });
 });
 
-// Запит PUT для оновлення тексту нотатки
 app.put("/notes/:note_name", upload.none(), async (req, res) => {
     getNotes((error, notes) => {
         if (error) {
@@ -140,7 +132,6 @@ app.put("/notes/:note_name", upload.none(), async (req, res) => {
     });
 });
 
-// Запит DELETE для видалення нотатки
 app.delete("/notes/:note_name", async (req, res) => {
     getNotes((error, notes) => {
         if (error) {
@@ -168,7 +159,6 @@ app.delete("/notes/:note_name", async (req, res) => {
     });
 });
 
-// Запуск сервера
 app.listen(8000, () => {
     console.log("Сервер запущено на localhost:8000");
 });
