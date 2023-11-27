@@ -102,34 +102,23 @@ app.get("/notes/:note_name", async (req, res) => {
     });
 });
 
-app.put("/notes/:note_name", upload.none(), async (req, res) => {
-    getNotes((error, notes) => {
-        if (error) {
-            console.error("Помилка при зчитуванні нотаток:", error);
-            res.status(500).send("Помилка сервера при зчитуванні нотаток.");
-            return;
-        }
+app.put('/notes/:note_name', express.text(), (req, res) => {
+    const noteName = req.params.note_name;
+    const newText = req.body;
+    const notes = JSON.parse(fs.readFileSync(notesFilePath, 'utf-8'));
 
-        const { note_name } = req.params;
-        const { note } = req.body;
+    const requestedNoteIndex = notes.findIndex((note) => note.note_name === noteName);
 
-        const existingNoteIndex = notes.findIndex((n) => n.note_name === note_name);
+    if (requestedNoteIndex === -1) {
+        return res.status(404).send('Note not found');
+    }
 
-        if (existingNoteIndex === -1) {
-            return res.status(404).send("Не знайдено: Нотатка з вказаною назвою не існує.");
-        }
+    // Заміна тексту нотатки
+    notes[requestedNoteIndex].note = newText;
+    fs.writeFileSync(notesFilePath, JSON.stringify(notes, null, 2));
 
-        // Оновлення тексту нотатки
-        notes[existingNoteIndex].note = note;
-        saveNotes(notes, (saveError) => {
-            if (saveError) {
-                console.error("Помилка при збереженні нотаток:", saveError);
-                res.status(500).send("Помилка сервера при збереженні нотаток.");
-                return;
-            }
-            res.send("Нотатку оновлено успішно!");
-        });
-    });
+
+    res.send('Note updated successfully');
 });
 
 app.delete("/notes/:note_name", async (req, res) => {
